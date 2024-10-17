@@ -1,4 +1,4 @@
-import { type PageProps } from "$fresh/server.ts";
+import { type PageProps } from "$fresh/server.ts"
 export default function App({ Component }: PageProps) {
   return (
     <html>
@@ -11,6 +11,9 @@ export default function App({ Component }: PageProps) {
       <body>
         <Component />
       </body>
+      <footer>
+        Made with ❤️ and 🦕 by <a href="//github.com/nonrational">@nonrational</a>.
+      </footer>
     </html>
-  );
+  )
 }
