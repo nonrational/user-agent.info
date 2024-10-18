@@ -1,0 +1,51 @@
+name: CI
+
+on: push
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - run: deno test --allow-env
+      - run: deno fmt --check
+      - run: deno lint
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+
+      - name: Install Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Install deployctl
+        run: deno install -gArf jsr:@deno/deployctl
+
+      - name: Add CANIUSE_AS_OF_EPOCH to .env
+        run: deno scripts/print-as-of-env.ts | tee -a .env
+
+      - name: Build
+        run: deno task build
+
+      - name: Deploy to Preview
+        run: deployctl deploy --token=${{ secrets.DENO_DEPLOY_TOKEN }}
+        if: github.ref != 'refs/tags/prod'
+
+      # If we're building a thing that's called prod
+      - name: Deploy to Production
+        run: deployctl deploy --prod --token=${{ secrets.DENO_DEPLOY_TOKEN }}
+        if: github.ref == 'refs/tags/prod'

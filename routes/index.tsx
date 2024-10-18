@@ -1,92 +1,156 @@
-import type { Handlers, PageProps } from "$fresh/server.ts"
-import { UserAgent } from "$std/http/user_agent.ts"
-import type { FunctionalComponent } from "preact"
-import type { BrowserName, ReleaseDate } from "../fixtures/releases.ts"
-import { getReleaseInfo, isKnownBrowser } from "../fixtures/releases.ts"
+import type { FunctionalComponent } from 'preact'
+import type { Handlers, PageProps } from '$fresh/server.ts'
+
+import { type Agent, getAgentReleaseInfo } from '../lib/agent.ts'
+import { formatDateYearMonth, humanizeDurationSince, randInterjection, toOrdinal } from '../lib/utils.ts'
+import { getFamilyName, getGlobalUsageStats, getNorthAmericaUsageStats } from '../lib/family.ts'
+import AgVer from '../lib/agent_version.ts'
+import UaInputSubmit from '../islands/ua_input_submit.tsx'
+import type { UserAgent } from '$std/http/user_agent.ts'
+
+export type KnownBrowserName = string
+
+type HomeProps = PageProps & { data: RenderData }
+type RenderData = { ua: string; source: 'query' | 'header' } & Agent
 
 export const handler: Handlers = {
   GET(req, ctx) {
-    const source = new URL(req.url).searchParams?.get("ua") ? "query" : "header"
-    const userAgentString = new URL(req.url).searchParams?.get("ua") || req.headers.get("user-agent")
+    const queryParamValue = new URL(req.url).searchParams?.get('ua')?.trim()
+    const source = queryParamValue ? 'query' : 'header'
+    const userAgentString = queryParamValue || req.headers.get('user-agent')
 
-    const userAgent = new UserAgent(userAgentString)
+    if (!userAgentString) return ctx.renderNotFound()
 
-    const { name, major } = userAgent.browser
+    const data = { source, ua: userAgentString, ...getAgentReleaseInfo(userAgentString) }
 
-    console.log("name", name)
-    console.log("major", major)
-    console.log("isKnownBrowser(name)", name ? isKnownBrowser(name) : false)
-
-    if (name && major && isKnownBrowser(name)) {
-      const releaseInfo = getReleaseInfo(name as BrowserName, parseInt(major))
-      return ctx.render({ source, known: true, userAgent, ...userAgent.browser, ...releaseInfo })
-    }
-
-    return ctx.render({ source, known: false, userAgent, name, version: major, on: null, before: null, after: null })
+    return ctx.render(data)
   },
 }
 
-type HomeProps = PageProps & {
-  data: {
-    source: string
-    known: boolean
-    userAgent: string
-    name: BrowserName
-    version: number
-    on: ReleaseDate
-    before: ReleaseDate
-    after: ReleaseDate
-  }
+const AgentIdentification = ({ ok, version, userAgent, name, source }: RenderData) => {
+  return (
+    <p>
+      {!ok && (
+        <>
+          Hmm. That agent must still be undercover. <a href='/' class='underline'>Start over</a>.
+        </>
+      )}
+
+      {ok && source === 'query' && <>That's</>}
+      {ok && source === 'header' && <>Looks like you're using</>}
+      {ok && (
+        <>
+          {' '}
+          <strong>{name} {AgVer.tryFormat(version)}</strong> on <strong>{userAgent?.os.name}</strong>. {randInterjection()}.
+        </>
+      )}
+    </p>
+  )
 }
 
-const formatDate = (date: Date) => date.toLocaleDateString()
+const AgentReleaseAge = ({ name, releaseDate }: RenderData) => {
+  if (!releaseDate) return null
 
-const Home: FunctionalComponent<HomeProps> = ({ data }: PageProps) => {
-  const { source, known, userAgent, name, version, on, before, after } = data
-
-  const daysSinceRelease = on && Math.floor((new Date().getTime() - on.getTime()) / (1000 * 60 * 60 * 24))
-  const yearsSinceRelease = on && Math.floor(daysSinceRelease / 365)
+  const { date, version } = releaseDate
 
   return (
-    <div class="container lg mx-auto flex flex-col items-center justify-center">
-      <h1 class="text-4xl font-bold">user-agent.info</h1>
-      <div class="m-8">
-        <form method="GET" class="block flex flex-row gap-lg">
-          <input
-            name="ua"
-            value={userAgent}
-            style={{ width: "850px" }}
-            // dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white
-            class="bg-gray-50 border border-gray-300 text-gray-900 rounded-lg text-sm p-2.5"
-          />
-          <button type="submit" class="ml-2">Submit</button>
+    <p>
+      {name} {version}
+      {date
+        ? ` was released in ${formatDateYearMonth(date)}; it's ${humanizeDurationSince(date)} old.`
+        : ` hasn't officially been released yet. Far out.`}
+    </p>
+  )
+}
+
+const AgentReleaseUsage = ({ userAgent, name, usage, rank, currentVersion }: RenderData) => {
+  if (!userAgent || !usage) return null
+
+  const hasSomeUsage = usage.percent > 0.000
+  const major = userAgent?.browser.major
+
+  if (!hasSomeUsage) {
+    return <p>{name} {usage.version} has{usage.percent > 0 ? ' nearly' : ''} 0% usage worldwide.</p>
+  }
+
+  return (
+    <p>
+      {name} {usage?.version}
+      {currentVersion === major && <>{' '}is the most recent major release{usage ? ' and' : '.'}</>} represents{' '}
+      <strong>{usage.percent.toFixed(3)}%</strong> of global browser traffic.
+      {rank && (
+        <>
+          {' '}
+          It's currently the {rank.place > 1 && toOrdinal(rank.place)} most popular version of {name} (out of {rank.outOf}{' '}
+          active versions) worldwide.
+        </>
+      )}
+    </p>
+  )
+}
+
+const AgentUsage = ({ name, deviceType, userAgent }: RenderData) => {
+  if (!userAgent) return null
+
+  const globalUsage = getGlobalUsageStats(userAgent.browser, userAgent.device)
+  const americasUsage = getNorthAmericaUsageStats(userAgent.browser, userAgent.device)
+
+  if (globalUsage < 0.01 && americasUsage < 0.01) return null
+
+  return (
+    <p>
+      {name && deviceType && <>{getFamilyName(name)} on {deviceType} is used by{' '}</>}
+      <strong>{americasUsage.toFixed(1)}</strong>% of North America and <strong>{globalUsage.toFixed(1)}%</strong> of the world.
+    </p>
+  )
+}
+
+// Because we're going to set innerHTML, only render
+const FormattedUserAgent = ({ userAgent }: { userAgent?: UserAgent }) => {
+  if (!userAgent) return null
+
+  const uaParts = userAgent.ua.replace(/([A-z]+\/[0-9.]+)/g, '¶$1').split('¶')
+
+  return (
+    <code class='text-sm text-center'>
+      {uaParts.map((part, index) => <div key={`ua-${index}`}>{part}</div>)}
+    </code>
+  )
+}
+
+const Home: FunctionalComponent<HomeProps> = ({ data }: PageProps) => {
+  const { ok, ua, userAgent } = data as RenderData
+
+  const inputValue = ok ? userAgent?.ua : ua
+
+  return (
+    <div class='container mx-auto flex flex-col items-center justify-center p-2'>
+      <div class='font-bold mt-8 text-2xl md:text-4xl flex flex-row items-center justify-center gap-4'>
+        <div>🕵️</div>
+        <div>user-agent.info</div>
+      </div>
+
+      <div class='my-8 w-full lg:max-w-4xl'>
+        <form method='GET' class='w-full'>
+          <UaInputSubmit ok={ok} value={inputValue} />
         </form>
       </div>
-      <div class="mx-md">
-        {!known && (
-          <p>
-            Whoa! That's a new one! Or maybe it's an old one? {name && `Consider opening a PR for ${name}.`}
-          </p>
+
+      <div class='text-lg px-4 py-4 md:px-0 md:text-2xl lg:text-4xl'>
+        <AgentIdentification {...data} />
+      </div>
+
+      {ok &&
+        (
+          <div class='text-md px-4 md:max-w-2xl'>
+            <AgentReleaseAge {...data} />
+            <AgentReleaseUsage {...data} />
+            <AgentUsage {...data} />
+          </div>
         )}
-        {known && (
-          <>
-            {known && source === "query" && <p>Ok! That looks to be {name}.</p>}
-            {known && source === "header" && <p>Ok! Looks like you're using {name}.</p>}
-            {name} {version} was released
-            {on && ` on or about ${formatDate(on)}`}
-            {!on && after && !before && ` sometime`}
-            {!on && after && ` after ${formatDate(after)}`}
-            {!on && after && before && ` and`}
-            {!on && before && ` before ${formatDate(before)}`}
-            {
-              /* {!on && after && before &&
-          ` between ${formatDate(after)} and ${formatDate(before)}`} */
-            }
-            {!on && !after && !before && `. That's all we know`}
-            .
-            {on && yearsSinceRelease > 1 && ` That's ${yearsSinceRelease} years ago.`}
-          </>
-        )}
+
+      <div class='mb-16'>
+        <FormattedUserAgent userAgent={userAgent} />
       </div>
     </div>
   )

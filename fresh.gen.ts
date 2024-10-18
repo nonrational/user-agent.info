@@ -2,20 +2,24 @@
 // This file SHOULD be checked into source version control.
 // This file is automatically updated during development when running `dev.ts`.
 
-import * as $_404 from "./routes/_404.tsx";
-import * as $_app from "./routes/_app.tsx";
-import * as $index from "./routes/index.tsx";
-
-import type { Manifest } from "$fresh/server.ts";
+import * as $_404 from './routes/_404.tsx'
+import * as $_app from './routes/_app.tsx'
+import * as $api_v1_agents from './routes/api/v1/agents.ts'
+import * as $index from './routes/index.tsx'
+import * as $ua_input_submit from './islands/ua_input_submit.tsx'
+import type { Manifest } from '$fresh/server.ts'
 
 const manifest = {
   routes: {
-    "./routes/_404.tsx": $_404,
-    "./routes/_app.tsx": $_app,
-    "./routes/index.tsx": $index,
+    './routes/_404.tsx': $_404,
+    './routes/_app.tsx': $_app,
+    './routes/api/v1/agents.ts': $api_v1_agents,
+    './routes/index.tsx': $index,
   },
-  islands: {},
+  islands: {
+    './islands/ua_input_submit.tsx': $ua_input_submit,
+  },
   baseUrl: import.meta.url,
-} satisfies Manifest;
+} satisfies Manifest
 
-export default manifest;
+export default manifest

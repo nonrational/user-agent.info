@@ -1,16 +1,41 @@
-# Fresh project
+<h2><img src='/static/logo@2x.png' height='30' alt='User-Agent.Info Logo' /> User Agent Info</h2>
 
-Your new Fresh project is ready to go. You can follow the Fresh "Getting
-Started" guide here: https://fresh.deno.dev/docs/getting-started
+### Features
 
-### Usage
+- User-Agent lookup via Web UI and API
+- Release date and version-specific usage stats from `caniuse-lite`
+- Usage / popularity stats for browsers from `statscounter`
 
-Make sure to install Deno: https://deno.land/manual/getting_started/installation
+### Future Ideas
 
-Then start the project:
+- List N most recently queried User-Agents
+- Specify your browserslist string to check whether a given User-Agent is covered
+- Include additional datasets for usage and popularity (e.g., `useragents.me`)
 
+### API Usage
+
+Specify a `User-Agent` header or `?ua` query parameter to fetch agent details via JSON. See the [Agent](./lib/agent.ts) type for schema
+details.
+
+```sh
+# `User-Agent` header
+curl -H 'User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.3' https://user-agent.info/api/v1/agents
+
+# `ua` query parameter
+curl 'https://user-agent.info/api/v1/agents?ua=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.3'
 ```
+
+## Local Development
+
+```sh
+git clone https://github.com/nonrational/user-agent.info
+cd user-agent.info/
+asdf install
 deno task start
 ```
 
-This will watch the project directory and restart as necessary.
+Common tasks are also available via `just`. See `just --list` if you have `just` installed.
+
+## Deployment
+
+See https://deno.com/deploy and [dmz-deploy.yml](./.github/workflows/dmz-deploy.yml).

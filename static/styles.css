@@ -13,6 +13,31 @@ footer {
   width: 100%;
 }
 
+/* // <uniquifier>: Use a unique and descriptive class name
+// <weight>: Use a value from 300 to 900 */
+
+.merienda-lite {
+  font-family: 'Merienda', cursive;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+
+.inter-regular {
+  font-family: 'Inter', sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 300;
+  font-style: normal;
+}
+
+p {
+  margin-bottom: 24px;
+}
+
+a {
+  text-decoration: underline;
+}
+
 a:hover {
   text-decoration: underline;
 }
