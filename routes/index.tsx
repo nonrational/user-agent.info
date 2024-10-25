@@ -4,7 +4,7 @@ import type { Handlers, PageProps } from '$fresh/server.ts'
 import { type Agent, getAgentReleaseInfo } from '../lib/agent.ts'
 import { formatDateYearMonth, humanizeDurationSince, randInterjection, toOrdinal } from '../lib/utils.ts'
 import { getFamilyName, getGlobalUsageStats, getNorthAmericaUsageStats } from '../lib/family.ts'
-import AgVer from '../lib/agent_version.ts'
+import AgVer, { safeParseInt } from '../lib/agent_version.ts'
 import UaInputSubmit from '../islands/ua_input_submit.tsx'
 import type { UserAgent } from '$std/http/user_agent.ts'
 
@@ -48,17 +48,28 @@ const AgentIdentification = ({ ok, version, userAgent, name, source }: RenderDat
   )
 }
 
-const AgentReleaseAge = ({ name, releaseDate }: RenderData) => {
-  if (!releaseDate) return null
+const AgentReleaseAge = ({ name, version, releaseDate, asOf, currentVersion }: RenderData) => {
+  if (!releaseDate?.date) {
+    // if the agent version is beyond the current version, it's likely just been released.
+    const veryRecent = (currentVersion && version) ? safeParseInt(currentVersion) < version.major : false
 
-  const { date, version } = releaseDate
+    // if the current date formatted matches the asOf date formatted, we're still in the same month, so use "in" not "after"
+    const likelyReleased = formatDateYearMonth(asOf || new Date())
+    const inOrAfter = formatDateYearMonth(new Date()) === likelyReleased
+
+    return (
+      <p>
+        {veryRecent
+          ? <>That version is brand new! It was likely released {inOrAfter ? 'in' : 'after'} {formatDateYearMonth(asOf || new Date())}.</>
+          : <>That version is either very old or very new. That's all we know.</>}
+      </p>
+    )
+  }
 
   return (
     <p>
-      {name} {version}
-      {date
-        ? ` was released in ${formatDateYearMonth(date)}; it's ${humanizeDurationSince(date)} old.`
-        : ` hasn't officially been released yet. Far out.`}
+      {name} {releaseDate.version} was released in {formatDateYearMonth(releaseDate.date)};{' '}
+      <>it's {humanizeDurationSince(releaseDate.date)} old.</>
     </p>
   )
 }

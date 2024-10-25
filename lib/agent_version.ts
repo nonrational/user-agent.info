@@ -22,7 +22,7 @@ export interface AgentVersion extends SemVer {
 }
 
 // SemVer compatibility requires that we return a 0 for unspecified parts.
-const safeParseInt = (s?: string): number => {
+export const safeParseInt = (s?: string): number => {
   const num = s ? parseInt(s, 10) : 0
 
   if (isNaN(num)) {
@@ -49,7 +49,7 @@ const parse = (value: string): AgentVersion => {
 }
 
 const toSemVer = (version: AgentVersion): SemVer => {
-  return parseSemVer(version.parts.join('.'))
+  return parseSemVer(version.parts.map((v) => v ? v : '0').join('.'))
 }
 
 const format = (version: AgentVersion, length?: number): string => {
