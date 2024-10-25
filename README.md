@@ -38,4 +38,7 @@ Common tasks are also available via `just`. See `just --list` if you have `just`
 
 ## Deployment
 
-See https://deno.com/deploy and [dmz-deploy.yml](./.github/workflows/dmz-deploy.yml).
+[Deno Deploy](https://deno.com/deploy) managed by [`deployctl`](https://github.com/denoland/deployctl) via GitHub Actions. See
+[ci.yml](./.github/workflows/ci.yml).
+
+To deploy manually, set `DENO_DEPLOY_TOKEN` in your environment and run `just deploy-preview`.
