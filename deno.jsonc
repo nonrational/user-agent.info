@@ -39,7 +39,7 @@
     "tailwindcss/": "npm:/tailwindcss@3.4.1/",
     "tailwindcss/plugin": "npm:/tailwindcss@3.4.1/plugin.js",
     // Production / Runtime
-    "caniuse-lite": "npm:caniuse-lite@^1.0.30001669",
+    "caniuse-lite": "npm:caniuse-lite@^1.0.30001677",
     "@std/semver": "jsr:@std/semver@^1.0.3",
     // Scripting / Scraping
     "@b-fuze/deno-dom": "jsr:@b-fuze/deno-dom@^0.1.48",
