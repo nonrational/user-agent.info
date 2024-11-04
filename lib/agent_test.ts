@@ -7,7 +7,7 @@ Deno.test('getAgentReleaseInfo - Chrome 91', () => {
   assertEquals(actual.userAgent?.browser?.name, 'Chrome')
   assertEquals(actual.userAgent?.browser?.version, '91.0.4472.124')
   // This test will break as caniuse-lite is updated over time ¯\_(ツ)_/¯
-  assertEquals(actual.usage, { percent: 0.053745, version: '91' })
+  assertEquals(actual.usage, { percent: 0.058352, version: '91' })
 })
 
 Deno.test('getAgentReleaseInfo - Chrome 129', () => {
@@ -16,7 +16,7 @@ Deno.test('getAgentReleaseInfo - Chrome 129', () => {
   assertEquals(actual.userAgent?.browser?.name, 'Chrome')
   assertEquals(actual.userAgent?.browser?.version, '129.0.0.0')
   // This test will break as caniuse-lite is updated over time ¯\_(ツ)_/¯
-  assertEquals(actual.usage, { percent: 0.014332, version: '129' })
+  assertEquals(actual.usage, { percent: 4.05546, version: '129' })
 })
 
 Deno.test('getAgentReleaseInfo - Firefox 89', () => {
