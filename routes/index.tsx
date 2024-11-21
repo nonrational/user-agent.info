@@ -136,6 +136,10 @@ const AgentUsage = ({ name, deviceType, userAgent }: RenderData) => {
 const AgentLookups = ({ lookupCount }: { lookupCount: number }) => {
   const notYouCount = lookupCount - 1
 
+  if (notYouCount === 0) {
+    return <p>You're the first person to ask about this agent! High five!</p>
+  }
+
   return (
     <p>
       {notYouCount > 1 ? '' : 'Only'} {notYouCount} other {notYouCount > 1 ? 'people have' : 'person has'} asked about this agent string.
