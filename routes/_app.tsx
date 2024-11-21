@@ -29,7 +29,7 @@ export default function App({ Component }: PageProps) {
           rel='stylesheet'
         />
       </head>
-      <body class='inter-regular'>
+      <body class='inter-regular dark:bg-zinc-800 dark:text-zinc-200'>
         <Component />
       </body>
       <footer class='merienda-attrib flex flex-row gap-16 justify-center text-sm'>
