@@ -83,10 +83,12 @@ const AgentReleaseAge = ({ name, version, releaseDate, asOf, currentVersion }: R
     )
   }
 
+  const ageDesc = humanizeDurationSince(releaseDate.date)
+
   return (
     <p>
       {name} {releaseDate.version} was released in {formatDateYearMonth(releaseDate.date)};{' '}
-      <>it's {humanizeDurationSince(releaseDate.date)} old.</>
+      <>it's {ageDesc ? `${ageDesc} old.` : 'brand new!'}</>
     </p>
   )
 }
