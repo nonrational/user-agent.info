@@ -1,3 +1,5 @@
+/// <reference lib="deno.unstable" />
+
 import type { FunctionalComponent } from 'preact'
 import type { Handlers, PageProps } from '$fresh/server.ts'
 
@@ -11,17 +13,32 @@ import type { UserAgent } from '$std/http/user_agent.ts'
 export type KnownBrowserName = string
 
 type HomeProps = PageProps & { data: RenderData }
-type RenderData = { ua: string; source: 'query' | 'header' } & Agent
+type RenderData = { ua: string; source: 'query' | 'header'; lookupCount: number } & Agent
+
+const incrHostQueryCountForAgent = async (ua: string, ip: Deno.NetAddr): Promise<number> => {
+  const kv = await Deno.openKv()
+
+  const hosts = await kv.get<string[]>(['ua', ua])
+
+  const uniqHosts = new Set(hosts?.value ? [...hosts.value, ip.hostname] : [ip.hostname])
+  await kv.set(['ua', ua], [...uniqHosts])
+
+  console.log(`ip:${ip.hostname} count:${uniqHosts.size} ua:${ua}`)
+
+  return uniqHosts.size
+}
 
 export const handler: Handlers = {
-  GET(req, ctx) {
+  async GET(req, ctx) {
     const queryParamValue = new URL(req.url).searchParams?.get('ua')?.trim()
     const source = queryParamValue ? 'query' : 'header'
     const userAgentString = queryParamValue || req.headers.get('user-agent')
 
     if (!userAgentString) return ctx.renderNotFound()
 
-    const data = { source, ua: userAgentString, ...getAgentReleaseInfo(userAgentString) }
+    const uniqLookupCount = await incrHostQueryCountForAgent(userAgentString, ctx.remoteAddr)
+
+    const data = { source, lookupCount: uniqLookupCount, ua: userAgentString, ...getAgentReleaseInfo(userAgentString) }
 
     return ctx.render(data)
   },
@@ -157,6 +174,10 @@ const Home: FunctionalComponent<HomeProps> = ({ data }: PageProps) => {
             <AgentReleaseAge {...data} />
             <AgentReleaseUsage {...data} />
             <AgentUsage {...data} />
+            <p>
+              {data.lookupCount > 1 ? '' : 'Only'} {data.lookupCount} other {data.lookupCount > 1 ? 'people' : 'person'}{' '}
+              has asked about this agent string.
+            </p>
           </div>
         )}
 
