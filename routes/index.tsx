@@ -133,7 +133,16 @@ const AgentUsage = ({ name, deviceType, userAgent }: RenderData) => {
   )
 }
 
-// Because we're going to set innerHTML, only render
+const AgentLookups = ({ lookupCount }: { lookupCount: number }) => {
+  const notYouCount = lookupCount - 1
+
+  return (
+    <p>
+      {notYouCount > 1 ? '' : 'Only'} {notYouCount} other {notYouCount > 1 ? 'people have' : 'person has'} asked about this agent string.
+    </p>
+  )
+}
+
 const FormattedUserAgent = ({ userAgent }: { userAgent?: UserAgent }) => {
   if (!userAgent) return null
 
@@ -174,10 +183,7 @@ const Home: FunctionalComponent<HomeProps> = ({ data }: PageProps) => {
             <AgentReleaseAge {...data} />
             <AgentReleaseUsage {...data} />
             <AgentUsage {...data} />
-            <p>
-              {data.lookupCount > 1 ? '' : 'Only'} {data.lookupCount} other {data.lookupCount > 1 ? 'people' : 'person'}{' '}
-              has asked about this agent string.
-            </p>
+            <AgentLookups {...data} />
           </div>
         )}
 
