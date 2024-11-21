@@ -1,6 +1,6 @@
 {
   "lock": false,
-  "version": "0.0.5",
+  "version": "0.0.6",
   "tasks": {
     "check": "deno fmt --check && deno lint && deno check **/*.ts && deno check **/*.tsx",
     "cli": "echo \"import '\\$fresh/src/dev/cli.ts'\" | deno run --unstable -A -",
