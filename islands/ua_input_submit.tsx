@@ -14,7 +14,6 @@ const UaInputSubmit = ({ ok, value }: { ok: boolean; value?: string }) => {
         name='ua'
         value={value}
         style={{ width: '100%', wordBreak: 'break-word', resize: 'both', borderColor: ok ? null : '#b91c1c' }}
-        onClick={(e) => e.currentTarget.select()}
       />
       <label class="before:content[' '] after:content[' '] pointer-events-none absolute left-0 -top-1.5 flex h-full w-full select-none text-[11px] font-normal leading-tight text-blue-gray-400
                     before:pointer-events-none before:mt-[6.5px] before:mr-1 before:box-border before:block before:h-1.5 before:w-2.5 before:rounded-tl-md before:border-t before:border-l before:border-blue-gray-200 before:transition-all
