@@ -1,8 +1,17 @@
 import { type PageProps } from '$fresh/server.ts'
+import { epochToDate } from '../lib/utils.ts'
+import { formatDateYearMonth } from '../lib/utils.ts'
+
+const tryFormatEnvDate = (key: string, div = 1): string | undefined => {
+  const envVal = Deno.env.get(key)
+  const asDate = envVal ? epochToDate(parseInt(envVal) / div) : undefined
+  return asDate ? formatDateYearMonth(asDate) : undefined
+}
 
 export default function App({ Component }: PageProps) {
-  // const envAsOf = Deno.env.get('CANIUSE_AS_OF_EPOCH')
-  // const deployedAt = envAsOf ? new Date(parseInt(envAsOf)).toLocaleDateString() : undefined
+  const usageDataAsOf = tryFormatEnvDate('CANIUSE_AS_OF_EPOCH')
+  // const lastDeployedAt = tryFormatEnvDate('DEPLOYED_AT', 1000)
+
   return (
     <html>
       <head>
@@ -26,7 +35,12 @@ export default function App({ Component }: PageProps) {
       <footer class='merienda-attrib flex flex-row gap-16 justify-center text-sm'>
         <span>
           Built with <span>☕️</span> and <span>🦕</span> by{' '}
-          <a href='https://github.com/nonrational/user-agent.info' target='_blank' rel='noopener noreferrer'>@nonrational</a>
+          <a href='https://github.com/nonrational/user-agent.info' target='_blank' rel='noopener noreferrer'>@nonrational</a>.
+          {usageDataAsOf && (
+            <>
+              {' '}Usage data as of {usageDataAsOf}.
+            </>
+          )}
         </span>
 
         {
