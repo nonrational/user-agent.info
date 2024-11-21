@@ -10,6 +10,15 @@ Deno.test('getAgentReleaseInfo - Chrome 91', () => {
   assertEquals(actual.usage, { percent: 0.058352, version: '91' })
 })
 
+Deno.test('getAgentReleaseInfo - Opera', () => {
+  const userAgent =
+    'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 OPR/110.0.0.0'
+  const actual = getAgentReleaseInfo(userAgent)
+  assertEquals(actual.userAgent?.browser?.name, 'Opera')
+  assertEquals(actual.userAgent?.browser?.version, '110.0.0.0')
+  assertEquals(actual.usage, { percent: 0, version: '110' })
+})
+
 Deno.test('getAgentReleaseInfo - Chrome 129', () => {
   const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36'
   const actual = getAgentReleaseInfo(userAgent)
