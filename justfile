@@ -7,10 +7,11 @@ debug:
 format:
   deno task format-all
 
-update-usage-data:
+update-data:
+  deno install npm:caniuse-lite
   deno --allow-net --allow-write=data scripts/fetch-statscounter.ts
   deno --allow-net --allow-write=data scripts/fetch-useragents-me.ts
-  deno fmt lib
+  deno fmt data
 
 test:
   deno test --allow-env
