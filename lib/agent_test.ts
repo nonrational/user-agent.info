@@ -1,4 +1,4 @@
-import { assertEquals } from 'jsr:@std/assert'
+import { assert, assertEquals } from 'jsr:@std/assert'
 import { getAgentReleaseInfo } from './agent.ts'
 
 Deno.test('getAgentReleaseInfo - Chrome 91', () => {
@@ -6,8 +6,9 @@ Deno.test('getAgentReleaseInfo - Chrome 91', () => {
   const actual = getAgentReleaseInfo(userAgent)
   assertEquals(actual.userAgent?.browser?.name, 'Chrome')
   assertEquals(actual.userAgent?.browser?.version, '91.0.4472.124')
-  // This test will break as caniuse-lite is updated over time ¯\_(ツ)_/¯
-  assertEquals(actual.usage, { percent: 0.058352, version: '91' })
+
+  assert(actual.usage?.percent !== undefined)
+  assertEquals(actual.usage?.version, '91')
 })
 
 Deno.test('getAgentReleaseInfo - Opera', () => {
@@ -24,8 +25,9 @@ Deno.test('getAgentReleaseInfo - Chrome 129', () => {
   const actual = getAgentReleaseInfo(userAgent)
   assertEquals(actual.userAgent?.browser?.name, 'Chrome')
   assertEquals(actual.userAgent?.browser?.version, '129.0.0.0')
-  // This test will break as caniuse-lite is updated over time ¯\_(ツ)_/¯
-  assertEquals(actual.usage, { percent: 4.05546, version: '129' })
+
+  assert(actual.usage?.percent !== undefined)
+  assertEquals(actual.usage?.version, '129')
 })
 
 Deno.test('getAgentReleaseInfo - Firefox 89', () => {
