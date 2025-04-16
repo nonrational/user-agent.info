@@ -88,7 +88,7 @@ const AgentReleaseAge = ({ name, version, releaseDate, asOf, currentVersion }: R
   return (
     <p>
       {name} {releaseDate.version} was released in {formatDateYearMonth(releaseDate.date)};{' '}
-      <>it's {ageDesc ? `${ageDesc} old.` : 'brand new!'}</>
+      it's {ageDesc ? `${ageDesc} old.` : 'brand new!'}
     </p>
   )
 }
