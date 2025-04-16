@@ -1,4 +1,4 @@
-name: cron-deploy
+name: cron
 
 on:
   schedule:
