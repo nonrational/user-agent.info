@@ -5,6 +5,7 @@
 - User-Agent lookup via Web UI and API
 - Release date and version-specific usage stats from `caniuse-lite`
 - Usage / popularity stats for browsers from `statscounter`
+- Automatic weekly deployment to fetch latest usage data.
 
 ### Future Ideas
 
