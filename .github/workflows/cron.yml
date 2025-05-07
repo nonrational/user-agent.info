@@ -34,11 +34,5 @@ jobs:
       - name: Build
         run: deno task build
 
-      - name: Deploy to Preview
-        run: deployctl deploy --token=${{ secrets.DENO_DEPLOY_TOKEN }}
-        if: github.ref != 'refs/tags/prod'
-
-      # If we're building a thing that's called prod
       - name: Deploy to Production
         run: deployctl deploy --prod --token=${{ secrets.DENO_DEPLOY_TOKEN }}
-        if: github.ref == 'refs/tags/prod'
