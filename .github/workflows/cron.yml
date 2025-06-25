@@ -23,7 +23,7 @@ jobs:
 
       - name: Install latest usage data
         run: |
-          deno install npm:caniuse-lite
+          deno install --no-lock npm:caniuse-lite
           deno --allow-net --allow-write=data scripts/fetch-statscounter.ts
           deno --allow-net --allow-write=data scripts/fetch-useragents-me.ts
           deno fmt data
