@@ -1,4 +1,4 @@
-import { assert, assertEquals } from 'jsr:@std/assert'
+import { assert, assertEquals } from '@std/assert'
 import { getAgentReleaseInfo } from './agent.ts'
 
 Deno.test('getAgentReleaseInfo - Chrome 91', () => {

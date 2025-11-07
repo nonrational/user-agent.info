@@ -1,6 +1,6 @@
 #!/usr/bin/env deno
 
-import { DOMParser } from 'jsr:@b-fuze/deno-dom'
+import { DOMParser } from '@b-fuze/deno-dom'
 import {} from '$std/fs/mod.ts'
 
 const url = 'https://useragents.me'

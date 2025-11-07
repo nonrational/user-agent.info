@@ -1,4 +1,4 @@
-import { assertEquals } from 'jsr:@std/assert'
+import { assertEquals } from '@std/assert'
 import { parse as parseSemVer } from '@std/semver'
 import AgVer, { type AgentVersion } from './agent_version.ts'
 
