@@ -15,7 +15,8 @@
   "fmt": {
     "semiColons": false,
     "lineWidth": 140,
-    "singleQuote": true
+    "singleQuote": true,
+    "exclude": ["**/*.svg"]
   },
   "lint": {
     "rules": {
