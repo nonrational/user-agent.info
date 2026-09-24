@@ -4,7 +4,7 @@ type RegionalDeviceStatProps = {
   na: { desktop: Record<string, number>; mobile: Record<string, number> }
 }
 const UsageStats: RegionalDeviceStatProps = {
-  asOf: '2026-09-24T03:32:21.821Z',
+  asOf: '2026-09-24T03:59:46.443Z',
   ww: {
     desktop: {
       'Chrome': 70.4,
