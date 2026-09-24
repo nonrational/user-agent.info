@@ -99,8 +99,9 @@ const AgentReleaseUsage = ({ userAgent, name, usage, rank, currentVersion }: Ren
   const hasSomeUsage = usage.percent > 0.000
   const major = userAgent?.browser.major
 
+  // A zero here means the stats don't count this version, not that nobody runs it. The visitor might be running it right now.
   if (!hasSomeUsage) {
-    return <p>{name} {usage.version} has{usage.percent > 0 ? ' nearly' : ''} 0% usage worldwide.</p>
+    return <p>{name} {usage.version} is too new or too rare to show up in worldwide usage stats.</p>
   }
 
   return (
