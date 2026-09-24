@@ -107,7 +107,8 @@ const AgentReleaseUsage = ({ userAgent, name, usage, rank, currentVersion }: Ren
     <p>
       {name} {usage?.version}
       {currentVersion === major && <>{' '}is the most recent major release{usage ? ' and' : '.'}</>} represents{' '}
-      <strong>{usage.percent.toFixed(3)}%</strong> of global browser traffic.
+      <strong>{usage.percent.toFixed(3)}%</strong> of{' '}
+      {usage.device ? `${usage.device} browser traffic worldwide` : 'global browser traffic'}.
       {rank && (
         <>
           {' '}

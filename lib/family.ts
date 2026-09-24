@@ -1,5 +1,6 @@
 import type { Browser, Device } from '$std/http/user_agent.ts'
 import statscounter from '../data/statscounter.ts'
+import versionStats from '../data/statscounter_versions.ts'
 
 const BROWSER_FAMILIES: Record<string, string> = {
   'Chrome': 'Chrome',
@@ -56,4 +57,11 @@ export const getNorthAmericaUsageStats = (browser: Browser, device: Device): num
     default:
       return 0
   }
+}
+
+// StatCounter only breaks share down by version for desktop and mobile.
+export const getVersionShares = (name: string, deviceType?: 'desktop' | 'mobile' | 'tablet'): Record<string, number> | undefined => {
+  if (deviceType !== 'desktop' && deviceType !== 'mobile') return undefined
+
+  return versionStats.ww[deviceType][getFamilyName(name)]
 }

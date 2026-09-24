@@ -2,12 +2,12 @@ import caniuse_lite, { type AgentLiteStats, type CanIUseAgentName, getCanIUseLas
 
 import { UserAgent } from '$std/http/user_agent.ts'
 import { debug, epochToDate } from './utils.ts'
-import { getFamilyName } from './family.ts'
+import { getFamilyName, getVersionShares } from './family.ts'
 import AgVer, { type AgentVersion } from './agent_version.ts'
 
 type ReleaseDate = { date?: Date; version?: string }
 type Rank = { place: number; outOf: number; version?: string }
-type Usage = { percent: number; version?: string }
+type Usage = { percent: number; version?: string; device?: 'desktop' | 'mobile' | 'tablet' }
 
 export type Agent = {
   ok: boolean
@@ -76,12 +76,12 @@ const getCurrentVersion = (stats: AgentLiteStats): Version | undefined => {
 }
 
 /*
- * Get get the ranking of a version in
+ * Get the ranking of a version among the versions of the same browser
  */
-const getVersionRank = (stats: AgentLiteStats, version?: AgentVersion): Rank | undefined => {
+const getVersionRank = (usageByVersion: Record<Version, number>, version?: AgentVersion): Rank | undefined => {
   if (!version) return undefined
 
-  const ranked = Object.entries(stats.usage_global)
+  const ranked = Object.entries(usageByVersion)
     .filter(([_, usage]) => usage && usage > 0)
     .sort(([, usageA], [, usageB]) => usageB - usageA)
 
@@ -97,10 +97,10 @@ const getVersionReleaseDate = (stats: AgentLiteStats, version?: AgentVersion): R
   return typeof value === 'number' ? { date: epochToDate(value), version: needle } : undefined
 }
 
-const getGlobalVersionUsage = (stats: AgentLiteStats, version?: AgentVersion): Usage | undefined => {
+const getVersionUsage = (usageByVersion: Record<Version, number>, version?: AgentVersion): Usage | undefined => {
   if (!version) return undefined
   // TODO(@nonrational): Provide support for checking whether a range matches the given version.
-  const { value, needle } = findMostSpecificVersionValue((tv: string) => stats.usage_global[tv], version)
+  const { value, needle } = findMostSpecificVersionValue((tv: string) => usageByVersion[tv], version)
   return typeof value === 'number' ? { percent: value, version: needle } : undefined
 }
 
@@ -138,12 +138,18 @@ export const getAgentReleaseInfo = (ua: string): Agent => {
     return thinResponse
   }
 
+  // caniuse-lite can trail a browser release by weeks, reporting a version most people already run as 0%. StatCounter
+  // catches up within days, so prefer its share for this device whenever it lists the version.
+  const shares = getVersionShares(name, thinResponse.deviceType)
+  const shareUsage = shares && getVersionUsage(shares, manifestVersion)
+  const usageByVersion = shareUsage ? shares : stats.usage_global
+
   const result: Agent = {
     ...thinResponse,
     currentVersion: getCurrentVersion(stats),
     releaseDate: getVersionReleaseDate(stats, manifestVersion),
-    usage: getGlobalVersionUsage(stats, manifestVersion),
-    rank: getVersionRank(stats, manifestVersion),
+    usage: shareUsage ? { ...shareUsage, device: thinResponse.deviceType } : getVersionUsage(usageByVersion, manifestVersion),
+    rank: getVersionRank(usageByVersion, manifestVersion),
   }
 
   debug('getAgentReleaseInfo result', result)

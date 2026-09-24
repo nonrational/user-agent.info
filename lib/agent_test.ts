@@ -38,4 +38,21 @@ Deno.test('getAgentReleaseInfo - Firefox 89', () => {
   assertEquals(actual.usage, { percent: 0, version: '89' })
 })
 
+Deno.test('getAgentReleaseInfo - Chrome 153 uses StatCounter share before caniuse-lite catches up', () => {
+  const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36'
+  const actual = getAgentReleaseInfo(userAgent)
+  assertEquals(actual.usage?.version, '153')
+  assertEquals(actual.usage?.device, 'desktop')
+  assert(actual.usage!.percent > 0)
+  assert(actual.rank !== undefined)
+})
+
+Deno.test('getAgentReleaseInfo - Mobile Chrome falls back to caniuse-lite', () => {
+  const userAgent = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36'
+  const actual = getAgentReleaseInfo(userAgent)
+  assertEquals(actual.name, 'Mobile Chrome')
+  assertEquals(actual.usage?.device, undefined)
+  assert(actual.usage!.percent > 0)
+})
+
 // TODO(@nonrational): Dynamically build tests for all the user agents in /data
