@@ -11,6 +11,7 @@ update-data:
   deno install npm:caniuse-lite
   deno --allow-net --allow-write=data scripts/fetch-statscounter.ts
   deno --allow-net --allow-write=data scripts/fetch-useragents-me.ts
+  deno --allow-net --allow-write=data scripts/fetch-release-schedules.ts
   deno fmt data
 
 test:
