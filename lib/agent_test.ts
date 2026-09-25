@@ -55,4 +55,20 @@ Deno.test('getAgentReleaseInfo - Mobile Chrome falls back to caniuse-lite', () =
   assert(actual.usage!.percent > 0)
 })
 
+Deno.test('getAgentReleaseInfo - Chrome 153 takes its release date from the Chromium schedule', () => {
+  const userAgent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/153.0.0.0 Safari/537.36'
+  const actual = getAgentReleaseInfo(userAgent)
+  assertEquals(actual.releaseDate?.version, '153')
+  assertEquals(actual.releaseDate?.date?.toISOString().slice(0, 10), '2026-09-08')
+})
+
+Deno.test('getAgentReleaseInfo - current version has already shipped', () => {
+  const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:89.0) Gecko/20100101 Firefox/89.0'
+  const { currentVersion } = getAgentReleaseInfo(userAgent)
+  const current = getAgentReleaseInfo(
+    `Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:${currentVersion}.0) Gecko/20100101 Firefox/${currentVersion}.0`,
+  )
+  assert(current.releaseDate!.date! <= new Date())
+})
+
 // TODO(@nonrational): Dynamically build tests for all the user agents in /data

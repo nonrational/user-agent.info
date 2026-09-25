@@ -1,4 +1,11 @@
-import caniuse_lite, { type AgentLiteStats, type CanIUseAgentName, getCanIUseLastUpdatedAt, type Version } from './caniuse-lite.ts'
+import caniuse_lite, {
+  type AgentLiteStats,
+  type CanIUseAgentName,
+  type EpochDate,
+  getCanIUseLastUpdatedAt,
+  type Version,
+} from './caniuse-lite.ts'
+import schedules from '../data/release_schedules.ts'
 
 import { UserAgent } from '$std/http/user_agent.ts'
 import { debug, epochToDate } from './utils.ts'
@@ -40,6 +47,15 @@ const CANIUSE_AGENT_NAMES: Record<string, CanIUseAgentName> = {
   'UC': 'and_uc',
 }
 
+// Vendors publish stable dates ahead of time, while caniuse-lite dates a release weeks after it ships. Android ships on the
+// desktop schedule.
+const RELEASE_SCHEDULES: Partial<Record<CanIUseAgentName, Record<Version, string>>> = {
+  chrome: schedules.chrome,
+  and_chr: schedules.chrome,
+  firefox: schedules.firefox,
+  and_ff: schedules.firefox,
+}
+
 // Consider adding a way to detect browsers that have funky or unexpected user agents.
 // const USER_AGENT_OVERRIDES: Record<string, string> = {
 //   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36': 'Arc',
@@ -69,10 +85,18 @@ const getFixedDeviceType = (ua: UserAgent): 'desktop' | 'mobile' | 'tablet' | un
   return undefined
 }
 
-const getCurrentVersion = (stats: AgentLiteStats): Version | undefined => {
-  return Object.entries(stats.release_date)
-    .filter(([_, date]) => date !== null)
-    .sort(([, dateA], [, dateB]) => dateB - dateA)[0][0]
+const getReleaseDates = (stats: AgentLiteStats, schedule?: Record<Version, string>): Record<Version, EpochDate> => {
+  const scheduled = Object.entries(schedule ?? {}).map(([version, date]) => [version, Date.parse(date) / 1000])
+  return { ...stats.release_date, ...Object.fromEntries(scheduled) }
+}
+
+// Schedules date versions that haven't shipped yet, so the current version is the newest one released as of now.
+const getCurrentVersion = (releaseDates: Record<Version, EpochDate>): Version | undefined => {
+  const now = Date.now() / 1000
+
+  return Object.entries(releaseDates)
+    .filter(([_, date]) => date !== null && date <= now)
+    .sort(([, dateA], [, dateB]) => dateB - dateA)[0]?.[0]
 }
 
 /*
@@ -90,10 +114,10 @@ const getVersionRank = (usageByVersion: Record<Version, number>, version?: Agent
   return typeof value !== 'number' || value === -1 ? undefined : { place: value + 1, version: needle, outOf: ranked.length }
 }
 
-const getVersionReleaseDate = (stats: AgentLiteStats, version?: AgentVersion): ReleaseDate | undefined => {
+const getVersionReleaseDate = (releaseDates: Record<Version, EpochDate>, version?: AgentVersion): ReleaseDate | undefined => {
   if (!version) return undefined
   // TODO(@nonrational): Provide support for checking whether a range matches the given version.
-  const { value, needle } = findMostSpecificVersionValue((tv: string) => stats.release_date[tv], version)
+  const { value, needle } = findMostSpecificVersionValue((tv: string) => releaseDates[tv], version)
   return typeof value === 'number' ? { date: epochToDate(value), version: needle } : undefined
 }
 
@@ -144,10 +168,12 @@ export const getAgentReleaseInfo = (ua: string): Agent => {
   const shareUsage = shares && getVersionUsage(shares, manifestVersion)
   const usageByVersion = shareUsage ? shares : stats.usage_global
 
+  const releaseDates = getReleaseDates(stats, RELEASE_SCHEDULES[caniuseAgentName])
+
   const result: Agent = {
     ...thinResponse,
-    currentVersion: getCurrentVersion(stats),
-    releaseDate: getVersionReleaseDate(stats, manifestVersion),
+    currentVersion: getCurrentVersion(releaseDates),
+    releaseDate: getVersionReleaseDate(releaseDates, manifestVersion),
     usage: shareUsage ? { ...shareUsage, device: thinResponse.deviceType } : getVersionUsage(usageByVersion, manifestVersion),
     rank: getVersionRank(usageByVersion, manifestVersion),
   }

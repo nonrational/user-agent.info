@@ -83,6 +83,14 @@ const AgentReleaseAge = ({ name, version, releaseDate, asOf, currentVersion }: R
     )
   }
 
+  if (releaseDate.date > new Date()) {
+    return (
+      <p>
+        {name} {releaseDate.version} is a pre-release build. It's due for stable release in {formatDateYearMonth(releaseDate.date)}.
+      </p>
+    )
+  }
+
   const ageDesc = humanizeDurationSince(releaseDate.date)
 
   return (
