@@ -1,5 +1,6 @@
 import { assert, assertEquals } from '@std/assert'
 import { getAgentReleaseInfo } from './agent.ts'
+import caniuse_lite from './caniuse-lite.ts'
 
 Deno.test('getAgentReleaseInfo - Chrome 91', () => {
   const userAgent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
@@ -48,7 +49,10 @@ Deno.test('getAgentReleaseInfo - Chrome 153 uses StatCounter share before canius
 })
 
 Deno.test('getAgentReleaseInfo - Mobile Chrome falls back to caniuse-lite', () => {
-  const userAgent = 'Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Mobile Safari/537.36'
+  // caniuse-lite only lists the current Android Chrome version, and CI resolves the newest caniuse-lite release, so the
+  // version under test has to come from the data rather than a literal.
+  const [version] = Object.entries(caniuse_lite.agents.and_chr.usage_global).sort(([, a], [, b]) => b - a)[0]
+  const userAgent = `Mozilla/5.0 (Linux; Android 10; K) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/${version}.0.0.0 Mobile Safari/537.36`
   const actual = getAgentReleaseInfo(userAgent)
   assertEquals(actual.name, 'Mobile Chrome')
   assertEquals(actual.usage?.device, undefined)
